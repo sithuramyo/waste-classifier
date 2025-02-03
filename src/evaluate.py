@@ -4,8 +4,8 @@ from sklearn.metrics import classification_report, confusion_matrix
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
-from .model import initialize_model
-from .data_loader import get_data_loaders
+from model import initialize_model
+from data_loader import get_data_loaders
 
 def evaluate_model(model_path, data_dir, batch_size=32):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

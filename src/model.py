@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torchvision import models
+import torchvision.models as models
 import json
 
 class WasteClassifier(nn.Module):
@@ -24,6 +24,8 @@ class WasteClassifier(nn.Module):
             _, preds = torch.max(outputs, 1)
         return [self.idx_to_class[str(idx.item())] for idx in preds]
 
-def initialize_model(num_classes, device='cuda' if torch.cuda.is_available() else 'cpu'):
-    model = WasteClassifier(num_classes)
-    return model.to(device)
+def initialize_model(num_classes, feature_extract, use_pretrained=True):
+    model_ft = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1 if use_pretrained else None)
+    # Modify the model as needed
+    # ...
+    return model_ft

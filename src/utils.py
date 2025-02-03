@@ -1,9 +1,12 @@
 import torch
 import os
 import matplotlib.pyplot as plt
+import shutil
 
-def save_checkpoint(state, filename):
+def save_checkpoint(state, is_best=False, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
+    if is_best:
+        shutil.copyfile(filename, 'model_best.pth.tar')
 
 def load_checkpoint(model, checkpoint_path):
     checkpoint = torch.load(checkpoint_path)

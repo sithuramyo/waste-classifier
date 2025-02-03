@@ -4,24 +4,23 @@ import torch.optim as optim
 from torch.optim import lr_scheduler
 import time
 import os
-from .utils import save_checkpoint, plot_metrics
-from .model import initialize_model
+from utils import save_checkpoint, plot_metrics
+from model import initialize_model
 from data_loader import get_data_loaders
+from tqdm import tqdm
 
 def train_model(data_dir, num_epochs=25, batch_size=32, lr=0.001):
     # Initialize model and data loaders
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     train_loader, val_loader, _, class_to_idx = get_data_loaders(data_dir, batch_size)
-    num_classes = len(class_to_idx)
-    
-    model = initialize_model(num_classes, device)
+    model = initialize_model(len(class_to_idx), feature_extract=True, use_pretrained=True)
+    model = model.to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
     best_acc = 0.0
-    train_loss, val_loss = [], []
-    train_acc, val_acc = [], []
+    train_loss, train_acc, val_loss, val_acc = [], [], [], []
 
     for epoch in range(num_epochs):
         print(f'Epoch {epoch+1}/{num_epochs}')
@@ -32,17 +31,17 @@ def train_model(data_dir, num_epochs=25, batch_size=32, lr=0.001):
         running_loss = 0.0
         running_corrects = 0
 
-        for inputs, labels in train_loader:
+        for inputs, labels in tqdm(train_loader, desc="Training"):
             inputs = inputs.to(device)
             labels = labels.to(device)
 
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels)
+            _, preds = torch.max(outputs, 1)
             loss.backward()
             optimizer.step()
 
-            _, preds = torch.max(outputs, 1)
             running_loss += loss.item() * inputs.size(0)
             running_corrects += torch.sum(preds == labels.data)
 
@@ -58,7 +57,7 @@ def train_model(data_dir, num_epochs=25, batch_size=32, lr=0.001):
         running_corrects = 0
 
         with torch.no_grad():
-            for inputs, labels in val_loader:
+            for inputs, labels in tqdm(val_loader, desc="Validation"):
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
@@ -83,7 +82,7 @@ def train_model(data_dir, num_epochs=25, batch_size=32, lr=0.001):
                 'state_dict': model.state_dict(),
                 'best_acc': best_acc,
                 'optimizer': optimizer.state_dict(),
-            }, 'models/best_model.pth')
+            }, is_best=True)
 
         scheduler.step()
 

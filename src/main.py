@@ -1,11 +1,11 @@
 import argparse
 from train import train_model
 from evaluate import evaluate_model
-from check_dataset import main as verify_dataset
+from verify_json import verify_annotation_compatibility
 
 def main():
     parser = argparse.ArgumentParser(description='Waste Classification Training')
-    parser.add_argument('--mode', choices=['train', 'evaluate'], required=True)
+    parser.add_argument('--mode', choices=['train', 'evaluate', 'verify'], required=True)
     parser.add_argument('--data_dir', default='dataset', help='Path to dataset directory')
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--epochs', type=int, default=25)
@@ -14,12 +14,11 @@ def main():
     
     args = parser.parse_args()
 
-    if args.mode == 'verify' or args.verify:
-        verify_dataset()
-        if args.mode == 'verify':
-            exit()
+    # if args.mode == 'verify' or args.verify:
+    #     verify_annotation_compatibility()
+    #     if args.mode == 'verify':
+    #         exit()
 
-    
     if args.mode == 'train':
         train_model(
             data_dir=args.data_dir,
