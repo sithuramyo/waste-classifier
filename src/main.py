@@ -1,6 +1,7 @@
 import argparse
 from train import train_model
 from evaluate import evaluate_model
+from check_dataset import main as verify_dataset
 
 def main():
     parser = argparse.ArgumentParser(description='Waste Classification Training')
@@ -12,6 +13,12 @@ def main():
     parser.add_argument('--model_path', help='Path to model checkpoint for evaluation')
     
     args = parser.parse_args()
+
+    if args.mode == 'verify' or args.verify:
+        verify_dataset()
+        if args.mode == 'verify':
+            exit()
+
     
     if args.mode == 'train':
         train_model(
