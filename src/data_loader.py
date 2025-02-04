@@ -18,14 +18,13 @@ class WasteDataset(Dataset):
         self.category_id_to_name = {cat['id']: cat['name'] for cat in data['categories']}
         
         # Create samples (image_path, category_id)
-        self.samples = []
-        for ann in data['annotations']:
-            image_file = self.image_id_to_file[ann['image_id']]
-            category_name = self.category_id_to_name[ann['category_id']]
-            self.samples.append((image_file, category_name))
+        self.samples = [
+            (self.image_id_to_file[ann['image_id']], self.category_id_to_name[ann['category_id']])
+            for ann in data['annotations']
+        ]
         
         # Create class mappings
-        self.classes = sorted(list(set(self.category_id_to_name.values())))
+        self.classes = sorted(set(self.category_id_to_name.values()))
         self.class_to_idx = {cls: idx for idx, cls in enumerate(self.classes)}
         self.idx_to_class = {idx: cls for cls, idx in self.class_to_idx.items()}
 
@@ -87,9 +86,11 @@ def get_data_loaders(data_root, batch_size=32, image_size=224):
     with open('models/class_indices.json', 'w') as f:
         json.dump(class_indices, f, indent=2)
 
+    num_workers = min(4, os.cpu_count() // 2)  # Optimize based on CPU count
+
     return (
-        DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4),
-        DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4),
-        DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4),
+        DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True, persistent_workers=True),
+        DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True, persistent_workers=True),
+        DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True, persistent_workers=True),
         train_dataset.class_to_idx
     )

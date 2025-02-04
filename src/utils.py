@@ -14,22 +14,28 @@ def load_checkpoint(model, checkpoint_path):
     return model
 
 def plot_metrics(train_loss, val_loss, train_acc, val_acc):
-    plt.figure(figsize=(12, 5))
-    
+    # Convert CUDA tensors to CPU tensors before converting to NumPy arrays
+    train_acc = [acc.cpu().numpy() for acc in train_acc]
+    val_acc = [acc.cpu().numpy() for acc in val_acc]
+    train_loss = [loss.cpu().numpy() for loss in train_loss]
+    val_loss = [loss.cpu().numpy() for loss in val_loss]
+
+    plt.figure(figsize=(10, 5))
     plt.subplot(1, 2, 1)
     plt.plot(train_loss, label='Train Loss')
     plt.plot(val_loss, label='Val Loss')
-    plt.title('Training and Validation Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
     plt.legend()
-    
+
     plt.subplot(1, 2, 2)
     plt.plot(train_acc, label='Train Acc')
     plt.plot(val_acc, label='Val Acc')
-    plt.title('Training and Validation Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
     plt.legend()
-    
-    plt.savefig(os.path.join('reports', 'training_metrics.png'))
-    plt.close()
+
+    plt.show()
 
 class Logger:
     def __init__(self, filename):
