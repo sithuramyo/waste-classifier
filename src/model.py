@@ -27,8 +27,16 @@ class WasteClassifier(nn.Module):
     def forward(self, x):
         return self.base_model(x)
     
-    def predict(self, x):
+    def predict(self, x,device=None):
         """ Returns class names for given input tensor """
+        
+        if device is None:
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        
+        self.to(device)  # Ensure model is on the correct device
+        x = x.to(device)  # Move input to the same device
+        self.eval()
+
         with torch.no_grad():
             outputs = self.forward(x)
             _, preds = torch.max(outputs, 1)

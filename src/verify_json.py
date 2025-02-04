@@ -32,10 +32,23 @@ def verify_annotation_compatibility(annotation_path, data_root):
         if ann['image_id'] not in image_ids:
             issues.append(f"Annotation {ann['id']} references missing image ID {ann['image_id']}")
     
-    return {
+    # Create the verification summary
+    result = {
         'total_images': len(data['images']),
         'total_annotations': len(data['annotations']),
         'unique_categories': len(unique_categories),
         'issues_found': len(issues),
-        'sample_issues': issues[:5]
+        'sample_issues': issues[:10]  # Show up to 5 sample issues
     }
+
+    # Print the results in JSON format
+    print("\n🚀 **Annotation Verification Report** 🚀")
+    print(json.dumps(result, indent=2))
+
+    # Print detailed issues if found
+    if issues:
+        print("\n⚠️ **Detailed Issues** ⚠️")
+        for issue in issues[:10]:  # Show up to 10 issues
+            print(f"- {issue}")
+
+    return result

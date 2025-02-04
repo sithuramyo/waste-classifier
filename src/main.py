@@ -1,4 +1,5 @@
 import argparse
+import os
 from train import train_model
 from evaluate import evaluate_model
 from verify_json import verify_annotation_compatibility
@@ -10,14 +11,17 @@ def main():
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--epochs', type=int, default=25)
     parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--model_path', help='Path to model checkpoint for evaluation')
+    parser.add_argument('--model_path',default='dataset/json',help='Path to model checkpoint for evaluation')
     
     args = parser.parse_args()
 
-    # if args.mode == 'verify' or args.verify:
-    #     verify_annotation_compatibility()
-    #     if args.mode == 'verify':
-    #         exit()
+    if args.mode == 'verify' or args.verify:
+        verify_annotation_compatibility(
+            annotation_path = os.path.join(args.data_dir, 'json/train_annotation.json'),
+            data_root = args.data_dir
+        )
+        if args.mode == 'verify':
+            exit()
 
     if args.mode == 'train':
         train_model(

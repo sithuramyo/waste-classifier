@@ -15,8 +15,9 @@ def evaluate_model(model_path, data_dir, batch_size=32):
     num_classes = len(class_to_idx)
     
     # Load model
-    model = initialize_model(num_classes, device)
-    checkpoint = torch.load(model_path)
+    model = initialize_model(num_classes, feature_extract=True, use_pretrained=True)
+    model = model.to(device)
+    checkpoint = torch.load(model_path, map_location=device)
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
     
@@ -35,23 +36,10 @@ def evaluate_model(model_path, data_dir, batch_size=32):
             all_preds.extend(preds.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
     
-    # Generate classification report
-    class_names = list(class_to_idx.keys())
-    report = classification_report(all_labels, all_preds, target_names=class_names)
-    print(report)
-    
-    # Save report
-    with open(os.path.join('reports', 'classification_report.txt'), 'w') as f:
-        f.write(report)
-    
-    # Generate confusion matrix
+    # Generate classification report and confusion matrix
+    print(classification_report(all_labels, all_preds, target_names=class_to_idx.keys()))
     cm = confusion_matrix(all_labels, all_preds)
-    plt.figure(figsize=(20, 20))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_to_idx.keys(), yticklabels=class_to_idx.keys())
     plt.xlabel('Predicted')
     plt.ylabel('True')
-    plt.title('Confusion Matrix')
-    plt.savefig(os.path.join('reports', 'confusion_matrix.png'))
-    plt.close()
-    
-    return report
+    plt.show()
